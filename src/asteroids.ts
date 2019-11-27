@@ -191,36 +191,44 @@ function init() {
             && (laserPosition.y < asteroid.position.y + 10 * asteroid.scale));
     }
 
-    function checkCollisitions() {
-        if (laser) {
-            let hit: Asteroid | undefined = undefined;
-            asteroids.forEach(asteroid => {
-                if (isAsteroidHit(asteroid)) {
-                    laser = false;
-                    if (asteroid.scale > 1) {
-                        asteroid.scale /= 2;
-                        asteroid.vector.speed += 1;
-                        asteroid.vector.direction = asteroid.vector.direction + 0.2 + Math.random() * 0.2;
-                        asteroids.push({
-                            position: {
-                                x: asteroid.position.x,
-                                y: asteroid.position.y,
-                            },
-                            vector: {
-                                direction: asteroid.vector.direction - 0.4 + Math.random() * 0.2,
-                                speed: asteroid.vector.speed,
-                            },
-                            rotation: asteroid.rotation,
-                            scale: asteroid.scale,
-                        })
-                    } else {
-                        hit = asteroid;
-                    };
-                }
-            });
-            if (hit) {
-                asteroids.splice(asteroids.indexOf(hit), 1);
+    function isShipHit(asteroid: Asteroid) {
+        return ((shipPosition.x > asteroid.position.x - 9 * asteroid.scale)
+            && (shipPosition.x < asteroid.position.x + 9 * asteroid.scale)
+            && (shipPosition.y > asteroid.position.y - 9 * asteroid.scale)
+            && (shipPosition.y < asteroid.position.y + 9 * asteroid.scale));
+    }
+
+    function checkCollisions() {
+        let hit: Asteroid | undefined = undefined;
+        asteroids.forEach(asteroid => {
+            if (laser && isAsteroidHit(asteroid)) {
+                laser = false;
+                if (asteroid.scale > 1) {
+                    asteroid.scale /= 2;
+                    asteroid.vector.speed += 1;
+                    asteroid.vector.direction = asteroid.vector.direction + 0.2 + Math.random() * 0.2;
+                    asteroids.push({
+                        position: {
+                            x: asteroid.position.x,
+                            y: asteroid.position.y,
+                        },
+                        vector: {
+                            direction: asteroid.vector.direction - 0.4 + Math.random() * 0.2,
+                            speed: asteroid.vector.speed,
+                        },
+                        rotation: asteroid.rotation,
+                        scale: asteroid.scale,
+                    })
+                } else {
+                    hit = asteroid;
+                };
+            } else if (isShipHit(asteroid)) {
+                hit = asteroid;
+                console.log('dead');
             }
+        });
+        if (hit) {
+            asteroids.splice(asteroids.indexOf(hit), 1);
         }
     }
     
@@ -240,7 +248,7 @@ function init() {
         moveLaser(diff);
         moveSpaceShip(diff);
         moveAsteroids(diff);
-        checkCollisitions();
+        checkCollisions();
     
         window.requestAnimationFrame(animationFrame);
     }
