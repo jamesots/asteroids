@@ -79,7 +79,9 @@ function init() {
 
     function drawAsteroid(asteroid: Asteroid) {
         ctx!.save();
-        ctx!.strokeStyle = 'green';
+        ctx!.strokeStyle = 'grey';
+        ctx!.fillStyle = '#202020';
+        ctx!.lineWidth = 2;
         ctx!.beginPath();
         ctx!.translate(asteroid.position.x, asteroid.position.y);
         ctx!.rotate(asteroid.vector.direction + Math.PI / 2);
@@ -98,7 +100,19 @@ function init() {
         ctx!.lineTo(-1.1, 9.9);
         ctx!.closePath();
         ctx!.stroke();
+        ctx!.fill();
         ctx!.restore();        
+    }
+
+    function drawExplosion(explosion: Explosion) {
+        ctx!.save();
+        ctx!.strokeStyle = explosion.color;
+        ctx!.beginPath();
+        ctx!.translate(explosion.position.x, explosion.position.y);
+        ctx!.scale(explosion.size, explosion.size);
+        ctx!.closePath();
+        ctx!.stroke();
+        ctx!.restore();
     }
 
     function drawAsteroids() {
@@ -109,7 +123,9 @@ function init() {
 
     function drawSpaceShip() {
         ctx!.save();
-        ctx!.strokeStyle = 'red';
+        ctx!.strokeStyle = 'purple';
+        ctx!.fillStyle = '#201010';
+        ctx!.lineWidth = 4;
         ctx!.beginPath();
         ctx!.translate(shipPosition.x, shipPosition.y);
         ctx!.rotate(shipVector.direction + Math.PI / 2);
@@ -119,6 +135,7 @@ function init() {
         ctx!.lineTo(0, 5);
         ctx!.closePath();
         ctx!.stroke();
+        ctx!.fill();
         ctx!.restore();
     }
 
@@ -139,7 +156,7 @@ function init() {
 
     function drawScore() {
         ctx!.save();
-        ctx!.strokeStyle = 'blue';
+        ctx!.strokeStyle = 'yellow';
         ctx!.font = '20px courier new';
         ctx!.strokeText(`Lives: ${lives}  Score: ${score}  Level: ${level}`, 0, 20);
         ctx!.restore();
@@ -265,7 +282,8 @@ function init() {
         }
         const diff = lastTimestamp - timestamp;
         lastTimestamp = timestamp;
-        ctx!.clearRect(0, 0, 640, 480);
+        ctx!.fillStyle = 'black';
+        ctx!.fillRect(0, 0, 640, 480);
         checkKeys(diff);
         drawSpaceShip();
         drawLaser();
