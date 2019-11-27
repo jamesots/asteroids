@@ -12,6 +12,12 @@ interface Asteroid {
     rotation: number;
     scale: number;
 }
+interface Explosion {
+    position: Pos;
+    age: number;
+    size: number;
+    color: string;
+}
 
 function init() {
     const canvas = document.getElementById('canvas') as HTMLCanvasElement;
@@ -47,7 +53,7 @@ function init() {
         direction: 0,
         speed: 15,
     }
-    let laser = false;
+    let laser = 0;
     let asteroids: Asteroid[] = [];
     let level = 1;
     let lives = 3;
@@ -56,10 +62,11 @@ function init() {
     let lastTimestamp: number | undefined = undefined;
 
     function createAsteroid() {
+        const direction = Math.random() * Math.PI * 2;
         asteroids.push({
             position: {
-                x: Math.random() * 640,
-                y: Math.random() * 480,
+                x: Math.sin(direction) * 370 + 320,
+                y: Math.cos(direction) * 290 + 240,
             },
             vector: {
                 direction: Math.random() * Math.PI * 2,
@@ -116,7 +123,7 @@ function init() {
     }
 
     function drawLaser() {
-        if (laser) {
+        if (laser > 0) {
             ctx!.save();
             ctx!.strokeStyle = 'red';
             ctx!.beginPath();
@@ -160,10 +167,10 @@ function init() {
     function moveAsteroid(asteroid: Asteroid, timestamp: number) {
         asteroid.position.x += Math.cos(asteroid.vector.direction) * asteroid.vector.speed;
         asteroid.position.y += Math.sin(asteroid.vector.direction) * asteroid.vector.speed;
-        asteroid.position.x = asteroid.position.x > 640 ? asteroid.position.x - 640 
-            : asteroid.position.x < 0 ? asteroid.position.x + 640 : asteroid.position.x;
-        asteroid.position.y = asteroid.position.y > 480 ? asteroid.position.y - 480 
-            : asteroid.position.y < 0 ? asteroid.position.y + 480 : asteroid.position.y;
+        asteroid.position.x = asteroid.position.x > 640 ? 0 
+            : asteroid.position.x < 0 ? 640 : asteroid.position.x;
+        asteroid.position.y = asteroid.position.y > 480 ? 0 
+            : asteroid.position.y < 0 ? 480 : asteroid.position.y;
     }
 
     function moveAsteroids(timestamp: number) {
@@ -175,9 +182,12 @@ function init() {
     function moveLaser(timestamp: number) {
         laserPosition.x += Math.cos(laserVector.direction) * laserVector.speed;
         laserPosition.y += Math.sin(laserVector.direction) * laserVector.speed;
-        if (laserPosition.x > 640 || laserPosition.x < 0
-            || laserPosition.y > 480 || laserPosition.y < 0) {
-            laser = false;
+        laserPosition.x = laserPosition.x > 640 ? 0 
+            : laserPosition.x < 0 ? 640 : laserPosition.x;
+        laserPosition.y = laserPosition.y > 480 ? 0 
+            : laserPosition.y < 0 ? 480 : laserPosition.y;
+        if (laser > 0) {
+            laser -= laserVector.speed;
         }
     }
 
@@ -213,7 +223,7 @@ function init() {
         let hit: Asteroid | undefined = undefined;
         asteroids.forEach(asteroid => {
             if (laser && isAsteroidHit(asteroid)) {
-                laser = false;
+                laser = 0;
                 if (asteroid.scale > 1) {
                     asteroid.scale /= 2;
                     asteroid.vector.speed += 1;
@@ -238,6 +248,7 @@ function init() {
             } else if (isShipHit(asteroid)) {
                 hit = asteroid;
                 lives--;
+                laser = 0;
                 console.log('dead');
             }
         });
@@ -293,17 +304,16 @@ function init() {
             laserPosition.y = shipPosition.y;
             laserVector.direction = shipVector.direction;
             laserVector.speed = shipVector.speed + 15;
-            laser = true;
+            laser = 300;
         }
     });
     document.addEventListener('keyup', ev => {
         keys[ev.key] = false;
     });
 
-    createAsteroid();
-    createAsteroid();
-    createAsteroid();
-    createAsteroid();
+    for (let i = 0; i < 4; i++) {
+        createAsteroid();
+    }
 
     window.requestAnimationFrame(animationFrame);
 }
