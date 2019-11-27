@@ -55,6 +55,7 @@ function init() {
     }
     let laser = 0;
     let asteroids: Asteroid[] = [];
+    let explosions: Explosion[] = [];
     let level = 1;
     let lives = 3;
     let score = 0;
@@ -110,9 +111,28 @@ function init() {
         ctx!.beginPath();
         ctx!.translate(explosion.position.x, explosion.position.y);
         ctx!.scale(explosion.size, explosion.size);
+        for (let i = 0; i < 8; i++) {
+            const angle = (Math.PI / 4) * i + ((Math.random() * 2) * Math.PI / 4);
+            const start = Math.random();
+            const end = 3 + Math.random() * 4;
+            ctx!.moveTo(
+                Math.cos(angle) * start,
+                Math.sin(angle) * start 
+            ),
+            ctx!.lineTo(
+                Math.cos(angle) * end,
+                Math.sin(angle) * end
+            )
+        }
         ctx!.closePath();
         ctx!.stroke();
         ctx!.restore();
+    }
+
+    function drawExplosions() {
+        explosions.forEach(explosion => {
+            drawExplosion(explosion);
+        });
     }
 
     function drawAsteroids() {
@@ -261,17 +281,41 @@ function init() {
                 } else {
                     hit = asteroid;
                     score += 2;
+                    explosions.push({
+                        age: 0,
+                        color: '#888',
+                        position: {
+                            x: hit!.position.x,
+                            y: hit!.position.y,
+                        },
+                        size: 3,
+                    })
                 };
             } else if (isShipHit(asteroid)) {
                 hit = asteroid;
                 lives--;
                 laser = 0;
-                console.log('dead');
+                explosions.push({
+                    age: 0,
+                    color: '#cc6060',
+                    position: {
+                        x: shipPosition.x,
+                        y: shipPosition.y,
+                    },
+                    size: 5,
+                });
             }
         });
-        if (hit) {
+        if (hit !== undefined) {
             asteroids.splice(asteroids.indexOf(hit), 1);
         }
+    }
+
+    function updateExplosions(timestamp: number) {
+        explosions.forEach(explosion => {
+            explosion.age += 1;
+        });
+        explosions = explosions.filter(explosion => explosion.age < 30);
     }
     
     function animationFrame(timestamp: number) {
@@ -288,10 +332,12 @@ function init() {
         drawSpaceShip();
         drawLaser();
         drawAsteroids();
+        drawExplosions();
         drawScore();
         moveLaser(diff);
         moveSpaceShip(diff);
         moveAsteroids(diff);
+        updateExplosions(diff);
         checkCollisions();
 
         if (asteroids.length === 0) {
