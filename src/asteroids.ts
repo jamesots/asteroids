@@ -317,28 +317,45 @@ function init() {
         });
         explosions = explosions.filter(explosion => explosion.age < 30);
     }
-    
-    function animationFrame(timestamp: number) {
-        if (lastTimestamp === undefined) {
-            lastTimestamp = timestamp;
-            window.requestAnimationFrame(animationFrame);
-            return;
-        }
-        const diff = lastTimestamp - timestamp;
-        lastTimestamp = timestamp;
+
+    function drawFrame() {
         ctx!.fillStyle = 'black';
         ctx!.fillRect(0, 0, 640, 480);
-        checkKeys(diff);
         drawSpaceShip();
         drawLaser();
         drawAsteroids();
         drawExplosions();
         drawScore();
+    }
+
+    function updateFrame(diff: number) {
         moveLaser(diff);
         moveSpaceShip(diff);
         moveAsteroids(diff);
         updateExplosions(diff);
         checkCollisions();
+    }
+
+    function calculateDiff(timestamp: number) {
+        if (lastTimestamp === undefined) {
+            lastTimestamp = timestamp;
+            window.requestAnimationFrame(animationFrame);
+            return 0;
+        }
+        const diff = lastTimestamp - timestamp;
+        lastTimestamp = timestamp;
+        return diff;
+    }
+    
+    function animationFrame(timestamp: number) {
+        const diff = calculateDiff(timestamp);
+        if (diff == 0) { 
+            return;
+        }
+        
+        checkKeys(diff);
+        drawFrame();
+        updateFrame(diff);
 
         if (asteroids.length === 0) {
             score += 10;
