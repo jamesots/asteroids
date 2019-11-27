@@ -183,6 +183,46 @@ function init() {
         }
         shipVector.speed = Math.min(shipVector.speed, 10);
     }
+
+    function isAsteroidHit(asteroid: Asteroid) {
+        return ((laserPosition.x > asteroid.position.x - 10 * asteroid.scale)
+            && (laserPosition.x < asteroid.position.x + 10 * asteroid.scale)
+            && (laserPosition.y > asteroid.position.y - 10 * asteroid.scale)
+            && (laserPosition.y < asteroid.position.y + 10 * asteroid.scale));
+    }
+
+    function checkCollisitions() {
+        if (laser) {
+            let hit: Asteroid | undefined = undefined;
+            asteroids.forEach(asteroid => {
+                if (isAsteroidHit(asteroid)) {
+                    laser = false;
+                    if (asteroid.scale > 1) {
+                        asteroid.scale /= 2;
+                        asteroid.vector.speed += 1;
+                        asteroid.vector.direction = asteroid.vector.direction + 0.2 + Math.random() * 0.2;
+                        asteroids.push({
+                            position: {
+                                x: asteroid.position.x,
+                                y: asteroid.position.y,
+                            },
+                            vector: {
+                                direction: asteroid.vector.direction - 0.4 + Math.random() * 0.2,
+                                speed: asteroid.vector.speed,
+                            },
+                            rotation: asteroid.rotation,
+                            scale: asteroid.scale,
+                        })
+                    } else {
+                        hit = asteroid;
+                    };
+                }
+            });
+            if (hit) {
+                asteroids.splice(asteroids.indexOf(hit), 1);
+            }
+        }
+    }
     
     function animationFrame(timestamp: number) {
         if (lastTimestamp === undefined) {
@@ -200,6 +240,7 @@ function init() {
         moveLaser(diff);
         moveSpaceShip(diff);
         moveAsteroids(diff);
+        checkCollisitions();
     
         window.requestAnimationFrame(animationFrame);
     }
@@ -215,7 +256,6 @@ function init() {
 
     document.addEventListener('keydown', ev => {
         keys[ev.key] = true;
-        console.log(ev.key);
         if (ev.key === ' ') {
             laserPosition.x = shipPosition.x;
             laserPosition.y = shipPosition.y;
