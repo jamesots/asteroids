@@ -49,6 +49,9 @@ function init() {
     }
     let laser = false;
     let asteroids: Asteroid[] = [];
+    let level = 1;
+    let lives = 3;
+    let score = 0;
 
     let lastTimestamp: number | undefined = undefined;
 
@@ -68,8 +71,8 @@ function init() {
     }
 
     function drawAsteroid(asteroid: Asteroid) {
-        ctx!.strokeStyle = 'green';
         ctx!.save();
+        ctx!.strokeStyle = 'green';
         ctx!.beginPath();
         ctx!.translate(asteroid.position.x, asteroid.position.y);
         ctx!.rotate(asteroid.vector.direction + Math.PI / 2);
@@ -98,8 +101,8 @@ function init() {
     }
 
     function drawSpaceShip() {
-        ctx!.strokeStyle = 'red';
         ctx!.save();
+        ctx!.strokeStyle = 'red';
         ctx!.beginPath();
         ctx!.translate(shipPosition.x, shipPosition.y);
         ctx!.rotate(shipVector.direction + Math.PI / 2);
@@ -114,8 +117,8 @@ function init() {
 
     function drawLaser() {
         if (laser) {
-            ctx!.strokeStyle = 'red';
             ctx!.save();
+            ctx!.strokeStyle = 'red';
             ctx!.beginPath();
             ctx!.translate(laserPosition.x, laserPosition.y);
             ctx!.rotate(laserVector.direction + Math.PI / 2);
@@ -125,6 +128,14 @@ function init() {
             ctx!.stroke();
             ctx!.restore();
         }
+    }
+
+    function drawScore() {
+        ctx!.save();
+        ctx!.strokeStyle = 'blue';
+        ctx!.font = '20px courier new';
+        ctx!.strokeText(`Lives: ${lives}  Score: ${score}  Level: ${level}`, 0, 20);
+        ctx!.restore();
     }
 
     /**
@@ -219,11 +230,14 @@ function init() {
                         rotation: asteroid.rotation,
                         scale: asteroid.scale,
                     })
+                    score++;
                 } else {
                     hit = asteroid;
+                    score += 2;
                 };
             } else if (isShipHit(asteroid)) {
                 hit = asteroid;
+                lives--;
                 console.log('dead');
             }
         });
@@ -245,10 +259,20 @@ function init() {
         drawSpaceShip();
         drawLaser();
         drawAsteroids();
+        drawScore();
         moveLaser(diff);
         moveSpaceShip(diff);
         moveAsteroids(diff);
         checkCollisions();
+
+        if (asteroids.length === 0) {
+            score += 10;
+            lives++;
+            level++;
+            for (let i = 0; i < level + 3; i++) {
+                createAsteroid();
+            }
+        }
     
         window.requestAnimationFrame(animationFrame);
     }
