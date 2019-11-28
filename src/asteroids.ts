@@ -292,7 +292,6 @@ function init() {
                     })
                 };
             } else if (isShipHit(asteroid)) {
-                hit = asteroid;
                 lives--;
                 laser = 0;
                 explosions.push({
@@ -352,7 +351,7 @@ function init() {
         if (diff == 0) { 
             return;
         }
-        
+
         checkKeys(diff);
         drawFrame();
         updateFrame(diff);
